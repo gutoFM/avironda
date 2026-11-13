@@ -1,0 +1,6 @@
+[
+  {
+    "targets": ["avironda-gs.brazilsouth.cloudapp.azure.com"],
+    "labels": { "__scheme__": "https", "ambiente": "producao" }
+  }
+]

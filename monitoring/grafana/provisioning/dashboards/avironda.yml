@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: avironda
+    folder: AviRonda
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

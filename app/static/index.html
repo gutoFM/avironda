@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AviRonda | Painel do galpão</title>
+  <meta name="description" content="Painel do AviRonda: condição de cada zona do aviário medida pelo carrinho de ronda.">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  <header class="topo">
+    <div>
+      <h1>AviRonda</h1>
+      <p class="sub" id="granja">Carregando dados do galpão...</p>
+    </div>
+    <div class="estado-robo" id="robo" role="status" aria-live="polite">Verificando o carrinho...</div>
+  </header>
+
+  <main id="conteudo">
+    <section aria-labelledby="t-resumo" class="resumo">
+      <h2 id="t-resumo" class="visual-oculto">Resumo do lote</h2>
+      <dl class="cartoes">
+        <div class="cartao"><dt>Lote</dt><dd id="lote">-</dd></div>
+        <div class="cartao"><dt>Idade das aves</dt><dd id="idade">-</dd></div>
+        <div class="cartao"><dt>Temperatura ideal hoje</dt><dd id="conforto">-</dd></div>
+        <div class="cartao"><dt>Zonas em alerta</dt><dd id="qtd-criticas">-</dd></div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="t-mapa">
+      <h2 id="t-mapa">Mapa do galpão</h2>
+      <p class="ajuda">Cada quadro é uma zona da ronda, da entrada até a saída de ar. A cor e o texto mostram a situação.</p>
+      <ol class="galpao" id="zonas" aria-live="polite"></ol>
+      <ul class="legenda" aria-label="Legenda">
+        <li><span class="selo normal">Normal</span> dentro do conforto</li>
+        <li><span class="selo atencao">Atenção</span> acompanhar na próxima ronda</li>
+        <li><span class="selo critico">Crítico</span> conferir agora</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="t-alertas">
+      <h2 id="t-alertas">Alertas recentes</h2>
+      <p class="ajuda">Um alerta só é confirmado depois que o carrinho mede a zona de novo. O sistema recomenda, quem decide é você.</p>
+      <ul class="alertas" id="alertas"></ul>
+    </section>
+
+    <section aria-labelledby="t-impacto">
+      <h2 id="t-impacto">Tempo fora do conforto por zona (lote atual)</h2>
+      <table class="tabela">
+        <caption class="visual-oculto">Percentual de leituras fora da faixa de conforto em cada zona</caption>
+        <thead><tr><th scope="col">Zona</th><th scope="col">Leituras</th><th scope="col">Fora do conforto</th><th scope="col">Percentual</th></tr></thead>
+        <tbody id="impacto"></tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="t-clima">
+      <h2 id="t-clima">Previsão de temperatura máxima na região</h2>
+      <p class="ajuda">Fonte: Open-Meteo. Dias quentes pedem atenção redobrada na ventilação.</p>
+      <ul class="clima" id="clima"></ul>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>AviRonda, CitizenTech FIAP 2026. Dados da granja de demonstração são fictícios. <a href="/docs">Documentação da API</a></p>
+  </footer>
+</body>
+</html>

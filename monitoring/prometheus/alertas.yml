@@ -1,0 +1,35 @@
+groups:
+  - name: avironda
+    rules:
+      - alert: AviRondaForaDoAr
+        expr: up{job="avironda"} == 0
+        for: 2m
+        labels: { severidade: critica }
+        annotations:
+          resumo: "O MVP não responde à coleta de métricas há 2 minutos."
+
+      - alert: AviRondaTaxaDeErroAlta
+        expr: |
+          sum(rate(avironda_http_request_duration_seconds_count{status=~"5.."}[5m]))
+            / clamp_min(sum(rate(avironda_http_request_duration_seconds_count[5m])), 1e-9) > 0.05
+        for: 5m
+        labels: { severidade: alta }
+        annotations:
+          resumo: "Mais de 5% das requisições terminando em erro 5xx."
+
+      - alert: AviRondaLatenciaAlta
+        expr: |
+          histogram_quantile(0.95, sum by (le) (rate(avironda_http_request_duration_seconds_bucket[5m]))) > 1
+        for: 5m
+        labels: { severidade: media }
+        annotations:
+          resumo: "p95 de latência acima de 1 segundo."
+
+      # Alerta de negócio: sem leitura, o granjeiro fica sem ronda e não sabe.
+      - alert: AviRondaCarrinhoSemLeitura
+        expr: time() - avironda_ultima_leitura_timestamp_seconds > 600
+        for: 1m
+        labels: { severidade: alta }
+        annotations:
+          resumo: "O carrinho não envia leitura há mais de 10 minutos."
+          acao: "Verificar bateria, rede Wi-Fi do galpão e se o carrinho travou num obstáculo."

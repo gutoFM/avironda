@@ -1,0 +1,9 @@
+# SITE_ADDRESS=:80 roda local em HTTP. Na nuvem recebe o nome DNS da VM e o Caddy emite o certificado HTTPS sozinho.
+{$SITE_ADDRESS} {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	reverse_proxy api:8000
+}

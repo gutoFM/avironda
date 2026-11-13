@@ -1,0 +1,76 @@
+#cloud-config
+# Prepara a VM: Docker, Compose e o script de deploy chamado pelo pipeline via "az vm run-command".
+package_update: true
+package_upgrade: true
+packages:
+  - docker.io
+  - docker-compose-v2
+  - jq
+  - curl
+  - unattended-upgrades
+
+write_files:
+  - path: /opt/avironda/deploy.sh
+    permissions: "0750"
+    owner: root:root
+    content: |
+      #!/bin/bash
+      # Uso: deploy.sh <sha-do-commit>
+      # Baixa o compose da versão exata, lê os segredos do Key Vault com a identidade da VM
+      # e sobe a nova imagem. Nenhum segredo trafega pelo pipeline.
+      set -euo pipefail
+      TAG="$1"
+      if ! [[ "$TAG" =~ ^[0-9a-f]{40}$ ]]; then
+        echo "[deploy] tag inválida, esperado o SHA completo do commit" >&2
+        exit 2
+      fi
+      cd /opt/avironda
+
+      TOKEN=$(curl -sf -H "Metadata: true" \
+        "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https%3A%2F%2Fvault.azure.net" \
+        | jq -r .access_token)
+      segredo() {
+        curl -sf -H "Authorization: Bearer $TOKEN" \
+          "https://${key_vault}.vault.azure.net/secrets/$1?api-version=7.4" | jq -r .value
+      }
+
+      BASE="https://raw.githubusercontent.com/${repositorio}/$TAG"
+      curl -fsSL "$BASE/docker-compose.yml" -o docker-compose.yml.novo
+      curl -fsSL "$BASE/Caddyfile" -o Caddyfile.novo
+      mv docker-compose.yml.novo docker-compose.yml
+      mv Caddyfile.novo Caddyfile
+
+      umask 077
+      {
+        echo "API_IMAGE=ghcr.io/$(echo '${repositorio}' | tr '[:upper:]' '[:lower:]'):$TAG"
+        echo "SITE_ADDRESS=${fqdn}"
+        echo "HTTP_PORT=80"
+        echo "HTTPS_PORT=443"
+        echo "AMBIENTE=producao"
+        echo "POSTGRES_PASSWORD=$(segredo postgres-password)"
+        echo "DEVICE_TOKEN=$(segredo device-token)"
+        echo "INTEGRACAO_TOKEN=$(segredo integracao-token)"
+        echo "METRICS_TOKEN=$(segredo metrics-token)"
+        echo "MINUTOS_SEM_LEITURA_ALERTA=10"
+        echo "INTERVALO_SEGUNDOS=300"
+        echo "LOTE_CODIGO=L-DEMO"
+      } > .env.novo
+      mv .env.novo .env
+
+      docker compose --profile demo pull --quiet
+      docker compose --profile demo up -d --remove-orphans
+
+      for _ in $(seq 1 30); do
+        if docker compose exec -T api python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)" 2>/dev/null; then
+          echo "[deploy] versão $TAG no ar"
+          docker image prune -af --filter "until=72h" >/dev/null
+          exit 0
+        fi
+        sleep 4
+      done
+      echo "[deploy] a API não respondeu ao health check" >&2
+      docker compose logs --tail 50 api >&2
+      exit 1
+
+runcmd:
+  - systemctl enable --now docker

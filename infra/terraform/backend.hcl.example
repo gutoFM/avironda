@@ -1,0 +1,6 @@
+# Copie para backend.hcl (ignorado pelo Git). Valores impressos por infra/bootstrap-state.sh
+resource_group_name  = "rg-avironda-tfstate"
+storage_account_name = "avirondatfstateXXXXX"
+container_name       = "tfstate"
+key                  = "avironda.tfstate"
+use_azuread_auth     = true

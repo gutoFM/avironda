@@ -1,0 +1,21 @@
+# segredos e ambiente
+.env
+.env.*
+!.env.example
+# terraform: state, planos e variáveis ficam fora do repositório
+infra/terraform/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+backend.hcl
+.terraform.lock.hcl.bak
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.db
+# sistema
+.DS_Store
