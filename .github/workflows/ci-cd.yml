@@ -24,9 +24,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # CLI oficial em container, varrendo o histórico inteiro a cada execução.
+      # A action no evento de push olha só os commits daquele envio e falha no primeiro push de uma branch.
+      - name: Gitleaks no histórico completo
+        run: docker run --rm -v "$PWD":/repo zricethezav/gitleaks:v8.30.1 git /repo --no-banner --redact -v
 
   sast:
     name: Semgrep (SAST)
