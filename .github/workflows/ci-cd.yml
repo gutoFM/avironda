@@ -11,7 +11,8 @@ permissions:
   contents: read
 
 env:
-  IMAGEM: ghcr.io/${{ github.repository_owner }}/avironda
+  # O registro só aceita minúsculas (o dono da conta é gutoFM).
+  IMAGEM: ghcr.io/gutofm/avironda
   TRIVY_IMAGEM: aquasec/trivy:0.76.2
   TERRAFORM_IMAGEM: hashicorp/terraform:1.14.6
 
