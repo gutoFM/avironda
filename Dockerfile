@@ -5,13 +5,17 @@ ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt \
+    && pip uninstall -y pip
 
 # Etapa 2: imagem final enxuta, sem root e sem segredo (tudo chega por variável de ambiente)
 FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/opt/venv/bin:$PATH"
+# O pip carrega um setuptools desatualizado embutido (CVE-2025-47273, barrada pelo Trivy).
+# Em produção nada é instalado em tempo de execução, então pip e setuptools saem da imagem.
 RUN apt-get update && apt-get upgrade -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
+    && python -m pip uninstall -y pip setuptools wheel \
     && groupadd --system --gid 10001 app \
     && useradd --system --uid 10001 --gid app --no-create-home --shell /usr/sbin/nologin app
 COPY --from=dependencias /opt/venv /opt/venv
