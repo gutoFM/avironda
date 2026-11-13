@@ -10,6 +10,10 @@ RUN pip install --upgrade pip && pip install -r requirements.txt \
 
 # Etapa 2: imagem final enxuta, sem root e sem segredo (tudo chega por variável de ambiente)
 FROM python:3.12-slim
+# Liga a imagem ao repositório no GHCR (permissão de escrita do pipeline e página do pacote).
+LABEL org.opencontainers.image.source="https://github.com/gutoFM/avironda" \
+      org.opencontainers.image.description="AviRonda API e painel" \
+      org.opencontainers.image.licenses="MIT"
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/opt/venv/bin:$PATH"
 # O pip carrega um setuptools desatualizado embutido (CVE-2025-47273, barrada pelo Trivy).
 # Em produção nada é instalado em tempo de execução, então pip e setuptools saem da imagem.
