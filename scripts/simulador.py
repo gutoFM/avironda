@@ -4,8 +4,9 @@ Faz o papel do robô enquanto o Raspberry Pi não está ligado: percorre as zona
 uma leitura por zona e envia para a API com o mesmo contrato do robô real.
 
 Como os números são gerados (dados simulados com geração justificada):
-- A temperatura interna parte da temperatura externa atual do Open-Meteo para a granja
-  e soma um ganho por zona: o ar entra resfriado pela placa evaporativa (Z1) e esquenta
+- O galpão climatizado mira o meio da faixa de conforto da idade atual do lote (lida em
+  /api/v1/painel), como faz o controlador de um aviário real. Sobre esse alvo entram
+  parte da temperatura externa atual do Open-Meteo e um ganho por zona: o ar entra resfriado pela placa evaporativa (Z1) e esquenta
   até a saída de ar (Z6), que é onde a Embrapa mediu os maiores picos.
 - Umidade e CO2 seguem a mesma lógica: sobem ao longo do galpão.
 - Se o Open-Meteo falhar, usa uma curva diária fixa (mínima de madrugada, pico às 15h).
@@ -49,10 +50,22 @@ def temperatura_externa(lat: float, lon: float) -> float:
         return valor
 
 
-def gerar_leitura(zona: str, externa: float, evento_calor: bool, dispositivo: str, lote: str) -> dict:
-    # O galpão climatizado mira o meio da faixa de conforto do lote e só repassa parte da variação
-    # externa (0,35). O ganho por zona representa o ar esquentando da entrada até a saída.
-    interna = 24.5 + 0.35 * (externa - 24.0) + GANHO_POR_ZONA[zona] + random.gauss(0, 0.3)
+def alvo_de_conforto(cliente: httpx.Client, api: str) -> float:
+    """Meio da faixa de conforto da idade atual do lote. Sem a API, usa 24,5 °C."""
+    try:
+        r = cliente.get(f"{api}/api/v1/painel")
+        r.raise_for_status()
+        minimo, maximo = r.json()["faixa_conforto_c"]
+        return (minimo + maximo) / 2
+    except (httpx.HTTPError, KeyError, ValueError) as erro:
+        log.warning("faixa de conforto indisponível (%s), usando 24,5 °C", erro.__class__.__name__)
+        return 24.5
+
+
+def gerar_leitura(zona: str, externa: float, alvo: float, evento_calor: bool, dispositivo: str, lote: str) -> dict:
+    # O galpão só repassa parte da variação externa (0,35). O ganho por zona representa
+    # o ar esquentando da entrada até a saída.
+    interna = alvo + 0.35 * (externa - 24.0) + GANHO_POR_ZONA[zona] + random.gauss(0, 0.3)
     umidade = 60 + GANHO_POR_ZONA[zona] * 2 + random.gauss(0, 2)
     co2 = CO2_BASE_POR_ZONA[zona] + random.gauss(0, 80)
     if evento_calor and zona == "Z4":
@@ -120,9 +133,10 @@ def main() -> int:
         while args.rondas == 0 or ronda < args.rondas:
             ronda += 1
             externa = temperatura_externa(args.lat, args.lon)
-            log.info("ronda %d, temperatura externa %.1f °C", ronda, externa)
+            alvo = alvo_de_conforto(cliente, args.api)
+            log.info("ronda %d, temperatura externa %.1f °C, alvo do galpão %.1f °C", ronda, externa, alvo)
             pendentes = carregar_fila()
-            pendentes += [gerar_leitura(z, externa, args.evento_calor, args.dispositivo, args.lote)
+            pendentes += [gerar_leitura(z, externa, alvo, args.evento_calor, args.dispositivo, args.lote)
                           for z in GANHO_POR_ZONA]
             if enviar(cliente, args.api, pendentes):
                 salvar_fila([])

@@ -4,13 +4,21 @@
 
 | Barreira | Ferramenta | Quando barra |
 |---|---|---|
-| Segredo no histórico | Gitleaks | Qualquer chave, token ou senha em qualquer commit |
+| Segredo no histórico | Gitleaks (CLI oficial em container, histórico completo a cada execução) | Qualquer chave, token ou senha em qualquer commit |
 | Código vulnerável | Semgrep (`p/default`, `p/python`, `p/dockerfile`, `p/terraform`, `p/github-actions`) | Achado bloqueante no código, no Dockerfile, no Terraform ou no próprio workflow |
 | Regressão | pytest | Regra de classificação ou contrato da API quebrado |
 | Infraestrutura insegura | `terraform validate` + Trivy config | Configuração HIGH ou CRITICAL no Terraform, Dockerfile ou compose |
 | Imagem vulnerável | Trivy image | CVE HIGH ou CRITICAL com correção disponível |
 
-A imagem só é publicada e implantada se as cinco barreiras passarem. As actions de terceiros são fixadas pelo SHA do commit, e as ferramentas rodam em imagens com versão fixa.
+A imagem só é publicada e implantada se as cinco barreiras passarem. As actions de terceiros são fixadas pelo SHA do commit, e as ferramentas rodam em imagens com versão fixa. A `main` é protegida: as cinco barreiras são checks obrigatórios e o force push é bloqueado.
+
+O Gitleaks roda pela CLI, e não pela action, porque no evento de push a action olha só os commits daquele envio: um segredo antigo passaria verde, e o primeiro push de uma branch nova falha.
+
+## Acesso do pipeline ao Azure
+
+- Login por OIDC: o GitHub não guarda senha nem chave do Azure. Os secrets `AZURE_CLIENT_ID`, `AZURE_TENANT_ID` e `AZURE_SUBSCRIPTION_ID` são identificadores, não credenciais.
+- A identidade federada só aceita tokens do environment `producao` deste repositório, identificado pelos IDs imutáveis do dono e do repositório.
+- Menor privilégio: papel "Virtual Machine Contributor" só no resource group do AviRonda. O pipeline não lê o Key Vault nem altera rede.
 
 ## Exceções registradas
 

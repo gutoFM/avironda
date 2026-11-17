@@ -63,7 +63,7 @@ h2 { font-size: 1.25rem; margin: 0 0 .25rem; }
 
 .galpao {
   list-style: none; margin: 0; padding: 0;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--espaco);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--espaco);
 }
 .zona { border-radius: var(--raio); padding: var(--espaco); border: 2px solid transparent; background: var(--vazio-fundo); }
 .zona h3 { margin: 0 0 .25rem; font-size: 1.05rem; }

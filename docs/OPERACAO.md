@@ -35,18 +35,20 @@ A VM leva de 3 a 5 minutos para terminar o cloud-init (Docker, Compose e o scrip
 RG=$(terraform output -raw resource_group)
 APP_ID=$(az ad app create --display-name avironda-github-deploy --query appId -o tsv)
 az ad sp create --id "$APP_ID"
-az ad app federated-credential create --id "$APP_ID" --parameters '{
-  "name": "github-producao",
-  "issuer": "https://token.actions.githubusercontent.com",
-  "subject": "repo:gutoFM/avironda:environment:producao",
-  "audiences": ["api://AzureADTokenExchange"]
-}'
+# Repositórios novos assinam o token com os IDs imutáveis do dono e do repositório
+SUBJECT=$(gh api repos/gutoFM/avironda -q '"repo:\(.owner.login)@\(.owner.id)/\(.name)@\(.id):environment:producao"')
+az ad app federated-credential create --id "$APP_ID" --parameters "{
+  \"name\": \"github-producao\",
+  \"issuer\": \"https://token.actions.githubusercontent.com\",
+  \"subject\": \"$SUBJECT\",
+  \"audiences\": [\"api://AzureADTokenExchange\"]
+}"
 # Menor privilégio: só consegue operar as VMs deste resource group
 az role assignment create --assignee "$APP_ID" --role "Virtual Machine Contributor" \
   --scope "$(az group show -n "$RG" --query id -o tsv)"
 ```
 
-O GitHub só recebe token do Azure quando o job roda no environment `producao` deste repositório.
+O GitHub só recebe token do Azure quando o job roda no environment `producao` deste repositório. O subject usa os IDs numéricos do dono e do repositório (`repo:gutoFM@<id>/avironda@<id>:environment:producao`): um repositório recriado com o mesmo nome tem outro ID e não herda o acesso.
 
 ## 4. Configuração do GitHub
 
@@ -61,7 +63,7 @@ Em **Settings > Secrets and variables > Actions**:
 | Variable | `AZURE_VM_NAME` | `terraform output -raw vm_nome` |
 | Variable | `URL_PUBLICA` | `terraform output -raw url_publica` |
 
-Depois do primeiro push na `main`, deixar o pacote `avironda` do GHCR como **público** (Packages > avironda > Package settings), para a VM baixar a imagem sem credencial. Em **Settings > Branches**, proteger a `main` exigindo os checks do pipeline.
+Depois do primeiro push na `main`, deixar o pacote `avironda` do GHCR como **público** (Packages > avironda > Package settings), para a VM baixar a imagem sem credencial. A `main` é protegida: merge só com Gitleaks, Semgrep, testes, IaC e imagem verdes, e force push bloqueado.
 
 ## 5. Deploy
 
