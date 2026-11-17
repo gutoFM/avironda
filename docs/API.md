@@ -30,7 +30,7 @@ Cada galpão tem um lote ativo, e o robô envia o `lote_codigo` do galpão onde 
 |---|---|
 | `suspeita` | Alerta aberto por uma leitura crítica, esperando a nova medição |
 | `confirmado` | Segunda leitura crítica na janela de 15 minutos. Fecha só por decisão humana (`PATCH`) |
-| `observacao` | Zona em atenção na última leitura. Atenção não abre alerta, mas o produtor precisa ver |
+| `observacao` | Zona em atenção na última leitura. Atenção não abre alerta, mas o produtor precisa ver. Não aparece com o carrinho atrasado (a leitura está velha) |
 
 Galpão com `robo_atrasado` não vira item de `alertas`: a tela gera esse aviso a partir do próprio galpão.
 

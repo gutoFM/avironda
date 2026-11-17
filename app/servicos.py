@@ -242,6 +242,7 @@ def status_propriedade(db: Session, minutos_alerta: int, previsao: Clima) -> Pro
         if ultima is not None:
             momentos.append(ultima)
         minutos = _minutos_desde(ultima)
+        atrasado = minutos is None or minutos >= minutos_alerta
         idade = idade_lote(lote)
         zonas_galpao = []
         for zona, leitura in zip(zonas, ultimas):
@@ -254,7 +255,7 @@ def status_propriedade(db: Session, minutos_alerta: int, previsao: Clima) -> Pro
         saida_galpoes.append(GalpaoStatus(
             codigo=galpao.codigo, nome=galpao.nome, lote_codigo=lote.codigo, idade_lote_dias=idade,
             faixa_conforto_c=_faixa_conforto(idade), minutos_sem_leitura=minutos,
-            robo_atrasado=minutos is None or minutos >= minutos_alerta, vazio_sanitario=False,
+            robo_atrasado=atrasado, vazio_sanitario=False,
             zonas=zonas_galpao))
 
         abertos = db.scalars(select(Alerta).where(
@@ -271,7 +272,8 @@ def status_propriedade(db: Session, minutos_alerta: int, previsao: Clima) -> Pro
                 motivo=alerta.motivo, acao_recomendada=alerta.acao_recomendada,
                 atualizado_em=_utc(alerta.atualizado_em).astimezone(FUSO_GRANJA)))
         # Atenção não abre alerta (só o crítico abre), mas o produtor precisa ver a zona na lista.
-        for zona, leitura in zip(zonas, ultimas):
+        # Com o carrinho atrasado a leitura está velha: vale o aviso de "sem leitura" do galpão.
+        for zona, leitura in zip(zonas, ultimas if not atrasado else []):
             if leitura is not None and leitura.nivel == regras.Nivel.ATENCAO.value and zona.codigo not in com_alerta:
                 alertas.append(AlertaPropriedade(
                     galpao=galpao.codigo, zona=zona.codigo, nivel=leitura.nivel, status="observacao",

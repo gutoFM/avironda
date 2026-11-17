@@ -154,3 +154,11 @@ def test_zona_em_atencao_aparece_para_o_produtor(cliente, sem_previsao):
     alerta = cliente.get("/api/v1/propriedade").json()["alertas"][0]
     assert (alerta["galpao"], alerta["zona"], alerta["nivel"], alerta["status"]) == ("G2", "Z5", "atencao", "observacao")
     assert "CO2 2700" in alerta["motivo"]
+
+
+def test_carrinho_atrasado_nao_lista_atencao_de_leitura_velha(cliente, sem_previsao):
+    cliente.post("/api/v1/leituras", json=leitura(zona="Z5", temperatura=30, co2_ppm=2700, minutos_atras=20,
+                                                  lote_codigo="L-DEMO-G2"), headers=DISPOSITIVO)
+    p = cliente.get("/api/v1/propriedade").json()
+    assert p["galpoes"][1]["robo_atrasado"] is True
+    assert p["alertas"] == []
