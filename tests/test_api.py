@@ -162,3 +162,19 @@ def test_carrinho_atrasado_nao_lista_atencao_de_leitura_velha(cliente, sem_previ
     p = cliente.get("/api/v1/propriedade").json()
     assert p["galpoes"][1]["robo_atrasado"] is True
     assert p["alertas"] == []
+
+
+def test_previsao_fora_do_ar_nao_trava_cada_requisicao(monkeypatch):
+    import httpx
+    from app import clima
+    chamadas = []
+
+    def falha(*_, **__):
+        chamadas.append(1)
+        raise httpx.ConnectTimeout("sem rede")
+
+    monkeypatch.setattr(clima.httpx, "get", falha)
+    monkeypatch.setattr(clima, "_cache", {"momento": 0.0, "valor": None, "falhou_em": 0.0})
+    assert clima.previsao(0, 0).disponivel is False
+    assert clima.previsao(0, 0).disponivel is False
+    assert len(chamadas) == 1

@@ -58,6 +58,9 @@ def url(tmp_path_factory):
         r = httpx.post(f"{base}/api/v1/leituras/lote", json={"leituras": leituras},
                        headers={"X-Device-Token": TOKEN}, timeout=10)
         r.raise_for_status()
+        # Aquece a previsão (Open-Meteo): sucesso fica em cache e falha espera 5 min para tentar de novo,
+        # então a tela não depende da internet do runner.
+        httpx.get(f"{base}/api/v1/propriedade", timeout=15).raise_for_status()
         yield base
     finally:
         proc.terminate()
