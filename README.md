@@ -4,7 +4,7 @@ Carrinho autônomo que faz a ronda do aviário no lugar do granjeiro. Ele mede c
 
 Este repositório é o **componente Produção** da CitizenTech AviRonda (Global Solution FIAP 2026, 4º ano de Engenharia de Software): a API e o painel que as outras disciplinas consomem, empacotados em container, com infraestrutura no Azure criada por Terraform, pipeline DevSecOps e observabilidade.
 
-- **MVP no ar:** https://URL-PUBLICA (painel do galpão) e https://URL-PUBLICA/docs (contrato da API)
+- **MVP no ar:** https://avironda-zrh1y.brazilsouth.cloudapp.azure.com (painel do galpão) e https://avironda-zrh1y.brazilsouth.cloudapp.azure.com/docs (contrato da API)
 - **Repositório:** https://github.com/gutoFM/avironda
 
 ## Integrantes
@@ -28,7 +28,7 @@ Este repositório é o **componente Produção** da CitizenTech AviRonda (Global
 | Arquitetura: componentes | Robô (Raspberry Pi + SCD40 + ultrassônico), API e painel (este repositório), pipeline de dados (Airflow + Databricks), assistente RAG local, visão computacional (aves por zona), automação de alertas e relatórios (RPA). Detalhe em [docs/ARQUITETURA.md](docs/ARQUITETURA.md). |
 | Fontes de dados | Leituras do carrinho (temperatura, umidade, CO2, amônia opcional) via API; previsão do Open-Meteo; base técnica da Embrapa e boletins do El Niño (RAG). Enquanto o robô não está no galpão, um simulador documentado gera as leituras ([scripts/simulador.py](scripts/simulador.py)). |
 | Modelos de IA utilizados | RAG local com LLM (disciplina Generative AI), modelo de detecção de aves (Applied Computer Vision). Nesta API, a classificação é por regras explícitas e auditáveis ([docs/REGRAS.md](docs/REGRAS.md)). |
-| URL do MVP e repositório | https://URL-PUBLICA e https://github.com/gutoFM/avironda |
+| URL do MVP e repositório | https://avironda-zrh1y.brazilsouth.cloudapp.azure.com e https://github.com/gutoFM/avironda |
 | Indicadores de impacto | Percentual do lote fora da faixa de conforto por zona (`/api/v1/indicadores/fora-do-limite`), alertas confirmados e falsos alarmes descartados, rondas substituídas, mortalidade do lote (informada pela granja). |
 | ODS conectados | 2 (fome zero e agricultura sustentável), 3 (saúde e bem-estar, inclusive do trabalhador que deixa a ronda insalubre), 9 (inovação e infraestrutura), 13 (ação contra a mudança do clima). |
 

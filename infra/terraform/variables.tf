@@ -20,9 +20,9 @@ variable "localizacao" {
 }
 
 variable "tamanho_vm" {
-  description = "Tamanho da VM"
+  description = "Tamanho da VM. No Azure for Students em Brazil South a série B não é oferecida e a família Dalsv7 não tem cota."
   type        = string
-  default     = "Standard_B2ats_v2"
+  default     = "Standard_D2_v4"
 }
 
 variable "admin_ip_cidr" {
