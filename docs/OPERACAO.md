@@ -63,7 +63,7 @@ Em **Settings > Secrets and variables > Actions**:
 | Variable | `AZURE_VM_NAME` | `terraform output -raw vm_nome` |
 | Variable | `URL_PUBLICA` | `terraform output -raw url_publica` |
 
-Depois do primeiro push na `main`, deixar o pacote `avironda` do GHCR como **público** (Packages > avironda > Package settings), para a VM baixar a imagem sem credencial. A `main` é protegida: merge só com Gitleaks, Semgrep, testes, IaC e imagem verdes, e force push bloqueado.
+Depois do primeiro push na `main`, deixar o pacote `avironda` do GHCR como **público** (Packages > avironda > Package settings), para a VM baixar a imagem sem credencial. A `main` é protegida, inclusive para administradores: merge só com Gitleaks, Semgrep, testes, IaC e imagem verdes, e force push bloqueado.
 
 ## 5. Deploy
 
@@ -76,7 +76,9 @@ az vm run-command invoke -g <rg> -n <vm> --command-id RunShellScript \
 
 O script baixa o `docker-compose.yml` e o `Caddyfile` daquele commit, lê os segredos do Key Vault, sobe a nova imagem e só termina quando a API responde ao health check. Em seguida o pipeline faz o smoke test na URL pública.
 
-**Voltar uma versão:** rodar o mesmo comando com o SHA anterior.
+**Voltar uma versão:** rodar o mesmo comando com o SHA anterior. O banco só ganha tabelas e colunas novas na subida (nada é apagado), então a versão anterior continua lendo os dados. A exceção é voltar para antes dos galpões (antes do commit `04481a5`): essa versão não conhece a tabela `galpao` e o `/api/v1/painel` passa a mostrar o lote mais novo da granja (o do G4), não o do G1. Para voltar até lá, desligue o simulador (`docker compose stop simulador`) e restaure o backup do banco feito antes da atualização (item 9).
+
+**Mudanças na `main`:** só entram por pull request com as cinco barreiras verdes, inclusive para administradores (`enforce_admins`). O deploy roda no push gerado pelo merge.
 
 ## 6. Monitoramento
 

@@ -141,9 +141,16 @@
       };
       return E[e] || E.ok;
     }
+    /* Alerta crítico confirmado só fecha por decisão humana: até lá, o galpão continua urgente. */
+    confirmadoAberto(gc) {
+      return ((this.D && this.D.alertas) || []).filter(function (a) {
+        return a.galpao === gc && a.status === 'confirmado' && a.nivel === 'critico';
+      })[0] || null;
+    }
     estadoGalpao(g) {
       if (g.vazio_sanitario) return 'vazio';
       if (g.robo_atrasado) return 'semleitura';
+      if (this.confirmadoAberto(g.codigo)) return 'critico';
       var pior = 'ok';
       g.zonas.forEach(function (z) {
         if (z.nivel === 'critico') pior = 'critico';
@@ -155,8 +162,9 @@
       var g = this.galpao(c);
       if (!g || g.robo_atrasado) return null;
       var crit = g.zonas.filter(function (z) { return z.nivel === 'critico'; })[0];
+      var conf = this.confirmadoAberto(c);
       var at = g.zonas.filter(function (z) { return z.nivel === 'atencao'; })[0];
-      return (crit || at || {}).codigo || null;
+      return (crit || (conf && { codigo: conf.zona }) || at || {}).codigo || null;
     }
     zonaFala(codigo) {
       return { Z1: 'na entrada', Z2: 'nos comedouros do início', Z3: 'no meio do galpão', Z4: 'zona do fundo', Z5: 'perto dos exaustores', Z6: 'na saída de ar' }[codigo] || codigo;
@@ -677,7 +685,9 @@
           return { nk: a.nivel, glifo: nz.glifo, nivel: a.nivel === 'critico' ? 'Urgente' : nz.nome,
             titulo: 'Zona ' + a.zona + (zz ? ', ' + zz.nome : ''), motivo: a.motivo, acao: a.acao_recomendada,
             confirmado: a.status === 'confirmado', tag: a.status === 'confirmado' ? 'Confirmado' : 'Aguardando nova medição',
-            explica: a.status === 'confirmado' ? 'O carrinho mediu esta zona de novo e o problema continua.' : 'O carrinho vai medir esta zona de novo antes de confirmar.',
+            explica: a.status !== 'confirmado' ? 'O carrinho vai medir esta zona de novo antes de confirmar.'
+              : (zz && zz.nivel === a.nivel ? 'O carrinho mediu esta zona de novo e o problema continua.'
+                : 'A última medição desta zona já melhorou, mas o alerta fica aberto até alguém da granja dar baixa.'),
             quando: 'Atualizado às ' + self.hora(a.atualizado_em) };
         });
         var alertaZ = (D.alertas || []).filter(function (a) { return a.galpao === sel && a.zona === zp; })[0];

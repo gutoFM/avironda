@@ -48,14 +48,19 @@ def url(tmp_path_factory):
                     break
             except httpx.HTTPError:
                 time.sleep(0.5)
-        # G1 normal, G2 com CO2 em atenção, G3 com calor confirmado, G4 sem leitura.
+        # G1 normal agora, mas com um calor confirmado na Z6 que ninguém deu baixa; G2 com CO2 em atenção;
+        # G3 com calor confirmado; G4 sem leitura.
         leituras = [_leitura("L-DEMO", f"Z{k}", 24.5) for k in range(1, 7)]
+        leituras += [_leitura("L-DEMO", "Z6", 30, minutos_atras=m) for m in (3, 2)]
         leituras += [_leitura("L-DEMO-G2", f"Z{k}", 30, co2=2700 if k == 5 else 1500) for k in range(1, 7)]
         leituras += [_leitura("L-DEMO-G3", f"Z{k}", 30.8 if k == 4 else 21.5, minutos_atras=2) for k in range(1, 7)]
         leituras += [_leitura("L-DEMO-G3", "Z4", 30.9)]
         r = httpx.post(f"{base}/api/v1/leituras/lote", json={"leituras": leituras},
                        headers={"X-Device-Token": TOKEN}, timeout=10)
         r.raise_for_status()
+        # Aquece a previsão (Open-Meteo): sucesso fica em cache e falha espera 5 min para tentar de novo,
+        # então a tela não depende da internet do runner.
+        httpx.get(f"{base}/api/v1/propriedade", timeout=15).raise_for_status()
         yield base
     finally:
         proc.terminate()
@@ -78,7 +83,9 @@ def test_granja_3d_abre_o_galpao_3_em_corte(url, pagina):
     pagina.goto(url)
     sync_api.expect(pagina.locator("#ar-canvas")).to_be_visible()
     sync_api.expect(pagina.locator("#ar-resumo .ar-sr")).to_have_text(
-        "4 galpões · 1 urgente · 1 atenção · 1 sem leitura")
+        "4 galpões · 2 urgentes · 1 atenção · 1 sem leitura")
+    # Marcador e lista contam a mesma história: alerta confirmado aberto mantém o galpão urgente.
+    sync_api.expect(pagina.locator('#ar-marcas [data-gc="G1"]')).to_contain_text("Galpão 1: Urgente")
     sync_api.expect(pagina.locator("#ar-painel")).to_contain_text("Galpão 3, zona do fundo: calor confirmado.")
 
     pagina.locator('#ar-marcas [data-gc="G3"]').click()

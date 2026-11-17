@@ -10,7 +10,7 @@
 | Infraestrutura insegura | `terraform validate` + Trivy config | Configuração HIGH ou CRITICAL no Terraform, Dockerfile ou compose |
 | Imagem vulnerável | Trivy image | CVE HIGH ou CRITICAL com correção disponível |
 
-A imagem só é publicada e implantada se as cinco barreiras passarem. As actions de terceiros são fixadas pelo SHA do commit, e as ferramentas rodam em imagens com versão fixa. A `main` é protegida: as cinco barreiras são checks obrigatórios e o force push é bloqueado.
+A imagem só é publicada e implantada se as cinco barreiras passarem. As actions de terceiros são fixadas pelo SHA do commit, e as ferramentas rodam em imagens com versão fixa. A `main` é protegida, inclusive para administradores: mudança só entra por pull request com as cinco barreiras verdes, e o force push é bloqueado.
 
 O Gitleaks roda pela CLI, e não pela action, porque no evento de push a action olha só os commits daquele envio: um segredo antigo passaria verde, e o primeiro push de uma branch nova falha.
 
