@@ -19,7 +19,7 @@ env:
 jobs:
   segredos:
     name: Gitleaks (segredos no histórico)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -31,7 +31,7 @@ jobs:
 
   sast:
     name: Semgrep (SAST)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container:
       image: semgrep/semgrep:1.180.0
     steps:
@@ -42,7 +42,7 @@ jobs:
 
   testes:
     name: Testes automatizados
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -55,7 +55,7 @@ jobs:
 
   iac:
     name: Terraform e Trivy config (IaC)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: terraform fmt e validate
@@ -70,7 +70,7 @@ jobs:
 
   imagem:
     name: Build, Trivy da imagem e publicação
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [segredos, sast, testes, iac]
     permissions:
       contents: read
@@ -94,7 +94,7 @@ jobs:
 
   deploy:
     name: Deploy no Azure
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: imagem
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     concurrency:
