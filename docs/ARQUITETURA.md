@@ -82,11 +82,12 @@ flowchart LR
 | Brazil South | Dados pessoais do produtor ficam no Brasil. |
 | Monitoramento fora da VM | Grafana e Prometheus não precisam de porta aberta na nuvem. Se a VM cair, o monitoramento continua de pé e dispara o alerta. |
 | Painel sem framework e sem script inline | Página leve para celular de entrada e rede ruim no campo, e CSP restrita (`script-src 'self'`). |
+| Granja em 3D com three.js servido pelo próprio site | A tela inicial (`/`) mostra a propriedade inteira, um marcador por galpão (glifo e palavra, nunca só cor). three.js r147 e as fontes ficam em `app/static/granja/`, conferidos com o pacote oficial, sem CDN, então a CSP continua só `'self'`. Sem WebGL, a mesma tela vira um mapa 2D. O detalhe de um galpão com histórico fica em `/galpao?galpao=G1`. |
 | Regras explícitas na API | O granjeiro e o avaliador conseguem ver por que uma zona ficou crítica. As partes de IA (RAG e visão) ficam nos componentes das outras disciplinas. |
 
 ## Resiliência
 
-- O painel atualiza a cada 30 segundos e cada bloco falha sozinho: sem previsão do tempo, o resto continua.
+- O painel atualiza a cada 30 segundos e cada bloco falha sozinho: sem previsão do tempo, o resto continua. A tela da granja atualiza a cada 60 segundos e só redesenha quando chega leitura nova.
 - O painel mostra há quantos minutos o carrinho não envia leitura, e o alerta `AviRondaCarrinhoSemLeitura` dispara com 10 minutos.
 - O simulador (e o robô) guarda as leituras numa fila local quando a API está fora e reenvia depois.
 - Containers com `restart: unless-stopped`, health check na API e no banco, e o deploy só termina quando a API responde.

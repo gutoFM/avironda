@@ -17,3 +17,11 @@ def cliente():
     Base.metadata.drop_all(engine)
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture()
+def sem_previsao(monkeypatch):
+    """A previsão vem do Open-Meteo. Nos testes, a internet não entra."""
+    from app import clima
+    from app.schemas import Clima
+    monkeypatch.setattr(clima, "previsao", lambda *_: Clima(disponivel=False, mensagem="teste"))

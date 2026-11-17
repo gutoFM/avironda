@@ -14,4 +14,4 @@ EM_ANDAMENTO = Gauge("avironda_http_requests_in_progress", "Requisições sendo 
 LEITURAS = Counter("avironda_leituras_total", "Leituras recebidas do carrinho", ["resultado"])
 ALERTAS = Counter("avironda_alertas_eventos_total", "Eventos do ciclo de vida dos alertas", ["evento"])
 ULTIMA_LEITURA = Gauge("avironda_ultima_leitura_timestamp_seconds", "Momento da última leitura válida (epoch)")
-ZONAS_CRITICAS = Gauge("avironda_zonas_criticas", "Zonas do galpão em nível crítico na última consulta")
+ZONAS_CRITICAS = Gauge("avironda_zonas_criticas", "Zonas da granja em nível crítico na última consulta da propriedade")

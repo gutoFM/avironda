@@ -53,3 +53,8 @@ def test_acao_para_frio_nao_manda_ventilar():
     assert regras.abaixo_do_conforto(20, 24)
     assert "fria" in regras.acao_recomendada(regras.Nivel.CRITICO, frio=True)
     assert "ventilação" in regras.acao_recomendada(regras.Nivel.CRITICO, frio=False)
+
+
+def test_motivo_mostra_temperatura_com_uma_casa():
+    avaliacao = regras.avaliar(20.8 + 0.4 * 6, 60, 1500, None, 35)
+    assert avaliacao.motivos[0].startswith("temperatura 23.2 °C acima do conforto")

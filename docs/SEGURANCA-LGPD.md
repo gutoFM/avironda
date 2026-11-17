@@ -6,7 +6,7 @@
 |---|---|---|
 | Segredo no histórico | Gitleaks (CLI oficial em container, histórico completo a cada execução) | Qualquer chave, token ou senha em qualquer commit |
 | Código vulnerável | Semgrep (`p/default`, `p/python`, `p/dockerfile`, `p/terraform`, `p/github-actions`) | Achado bloqueante no código, no Dockerfile, no Terraform ou no próprio workflow |
-| Regressão | pytest | Regra de classificação ou contrato da API quebrado |
+| Regressão | pytest e Playwright (Chromium) | Regra de classificação, contrato da API ou tela da granja quebrados, inclusive erro de JavaScript ou violação da CSP |
 | Infraestrutura insegura | `terraform validate` + Trivy config | Configuração HIGH ou CRITICAL no Terraform, Dockerfile ou compose |
 | Imagem vulnerável | Trivy image | CVE HIGH ou CRITICAL com correção disponível |
 
@@ -33,6 +33,7 @@ O Gitleaks roda pela CLI, e não pela action, porque no evento de push a action 
 - **Autenticação por função:** robô com `X-Device-Token`, integrações (RPA) com `X-Api-Key`, Prometheus com Bearer token. Comparação em tempo constante.
 - **Rede:** NSG libera só 80 e 443 ao público e 22 só para o IP do administrador (a variável recusa `0.0.0.0/0`). Banco e API não publicam porta. Key Vault aceita só a sub-rede da VM e o IP do administrador.
 - **Container:** usuário não root (UID 10001), sistema de arquivos somente leitura, `no-new-privileges`, todas as capabilities removidas.
+- **Dependências do navegador:** three.js e as fontes são servidos pelo próprio site, com o hash conferido contra o pacote oficial do npm. Nenhum script ou fonte vem de CDN.
 - **HTTPS:** certificado automático no Caddy, com HSTS. Cabeçalhos `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` e CSP.
 - **Logs:** não registram dados do produtor nem tokens.
 

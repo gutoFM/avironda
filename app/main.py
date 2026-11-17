@@ -16,13 +16,14 @@ from app import clima, metricas, servicos
 from app.config import settings
 from app.db import SessionLocal, sessao
 from app.schemas import (AlertaAtualizacao, AlertaSaida, Clima, HorasForaZona, LeituraEntrada,
-                         LeituraLote, LeituraResultado, LeituraSaida, PainelStatus)
+                         LeituraLote, LeituraResultado, LeituraSaida, PainelStatus, PropriedadeStatus)
 from app.seed import preparar_banco
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 log = logging.getLogger("avironda")
 
 STATIC = Path(__file__).parent / "static"
+GALPAO = Query(default=None, pattern="^G[0-9]{1,2}$", description="Código do galpão. Sem ele, vale o primeiro galpão.")
 
 
 @asynccontextmanager
@@ -90,7 +91,14 @@ async def _nao_encontrado(_: Request, erro: servicos.NaoEncontrado):
 
 
 @app.get("/", include_in_schema=False)
+def granja() -> FileResponse:
+    """Tela inicial do produtor: a granja em 3D com o estado de cada galpão."""
+    return FileResponse(STATIC / "granja" / "granja.html")
+
+
+@app.get("/galpao", include_in_schema=False)
 def painel() -> FileResponse:
+    """Painel detalhado de um galpão, com histórico e indicador de impacto."""
     return FileResponse(STATIC / "index.html")
 
 
@@ -125,22 +133,30 @@ def receber_lote(corpo: LeituraLote, db: Session = Depends(sessao)) -> List[Leit
     return [servicos.registrar_leitura(db, item) for item in ordenadas]
 
 
+@app.get("/api/v1/propriedade", response_model=PropriedadeStatus, tags=["painel"])
+def status_propriedade(db: Session = Depends(sessao)) -> PropriedadeStatus:
+    """Todos os galpões da granja, a previsão de máxima e o que precisa do produtor agora."""
+    previsao = clima.previsao(settings.granja_latitude, settings.granja_longitude)
+    return servicos.status_propriedade(db, settings.minutos_sem_leitura_alerta, previsao)
+
+
 @app.get("/api/v1/painel", response_model=PainelStatus, tags=["painel"])
-def status_painel(db: Session = Depends(sessao)) -> PainelStatus:
-    return servicos.status_painel(db, settings.minutos_sem_leitura_alerta)
+def status_painel(galpao: Optional[str] = GALPAO, db: Session = Depends(sessao)) -> PainelStatus:
+    return servicos.status_painel(db, settings.minutos_sem_leitura_alerta, galpao)
 
 
 @app.get("/api/v1/leituras", response_model=List[LeituraSaida], tags=["painel"])
 def listar_leituras(zona: Optional[str] = Query(default=None, max_length=10),
                     horas: int = Query(default=24, ge=1, le=24 * 60),
                     limite: int = Query(default=500, ge=1, le=5000),
+                    galpao: Optional[str] = GALPAO,
                     db: Session = Depends(sessao)) -> List[LeituraSaida]:
-    return servicos.listar_leituras(db, zona, horas, limite)
+    return servicos.listar_leituras(db, zona, horas, limite, galpao)
 
 
 @app.get("/api/v1/indicadores/fora-do-limite", response_model=List[HorasForaZona], tags=["painel"])
-def fora_do_limite(db: Session = Depends(sessao)) -> List[HorasForaZona]:
-    return servicos.fora_do_limite_por_zona(db)
+def fora_do_limite(galpao: Optional[str] = GALPAO, db: Session = Depends(sessao)) -> List[HorasForaZona]:
+    return servicos.fora_do_limite_por_zona(db, galpao)
 
 
 @app.get("/api/v1/clima", response_model=Clima, tags=["painel"])

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minha granja hoje · AviRonda</title>
+<link rel="stylesheet" href="/static/granja/granja.css">
+<script src="/static/granja/vendor/three.min.js" defer></script>
+<script src="/static/granja/vendor/OrbitControls.js" defer></script>
+<script src="/static/granja/granja.js" defer></script>
+</head>
+<body>
+<div id="ar-app" class="ar-app" data-api="/api/v1/propriedade" data-atualizar-seg="60">
+
+  <header class="ar-topo">
+    <div class="ar-topo__in">
+      <div class="ar-marca">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="6" y="15" width="24" height="12" rx="3"></rect>
+          <circle cx="12" cy="30" r="3"></circle>
+          <circle cx="25" cy="30" r="3"></circle>
+          <path d="M24 15V8"></path>
+          <rect x="20" y="4" width="10" height="5" rx="1.5"></rect>
+          <path d="M33 12c2 2 2 6 0 8"></path>
+        </svg>
+        <div>
+          <div class="ar-marca__nome">AviRonda</div>
+          <h1 class="ar-marca__titulo">Minha granja hoje</h1>
+        </div>
+      </div>
+      <div class="ar-granja">
+        <div class="ar-granja__nome" id="ar-granja-nome">Carregando...</div>
+        <div class="ar-granja__leitura">Última leitura: <span class="ar-mono" id="ar-ultima"></span></div>
+      </div>
+      <section class="ar-previsao" aria-label="Previsão de temperatura máxima dos próximos 5 dias">
+        <div class="ar-previsao__rotulo">Máxima prevista, próximos 5 dias</div>
+        <ul class="ar-previsao__lista" id="ar-previsao"></ul>
+      </section>
+    </div>
+  </header>
+
+  <div class="ar-resumo">
+    <div class="ar-resumo__in">
+      <div class="ar-resumo__pills" id="ar-resumo"></div>
+      <p class="ar-resumo__regra">O AviRonda recomenda. <strong>Quem decide é você.</strong></p>
+    </div>
+  </div>
+
+  <main class="ar-main">
+    <section class="ar-cena" id="ar-cena" aria-label="Mapa da granja. Tab percorre os galpões, Enter aproxima, Esc volta à visão geral.">
+      <div class="ar-cena__carregando" id="ar-carregando">Carregando a granja...</div>
+      <canvas class="ar-cena__canvas" id="ar-canvas" aria-hidden="true" hidden></canvas>
+      <div class="ar-cena__overlay" id="ar-overlay" hidden>
+        <div id="ar-marcas"></div>
+        <div id="ar-zonas"></div>
+      </div>
+      <div class="ar-mapa2d" id="ar-mapa2d" hidden></div>
+      <div class="ar-cena__topo">
+        <button type="button" class="ar-btn ar-btn--voltar" data-acao="voltar" id="ar-voltar-cena" hidden>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+          Voltar à granja
+        </button>
+        <span class="ar-cena__titulo" id="ar-cena-titulo">Visão geral da granja</span>
+      </div>
+      <div class="ar-cena__base">
+        <ul class="ar-legenda" id="ar-legenda-geral" aria-label="Legenda dos estados do galpão">
+          <li><span class="ar-glifo nv-ok" aria-hidden="true">✓</span>Tudo certo</li>
+          <li><span class="ar-glifo nv-atencao" aria-hidden="true">▲</span>Atenção</li>
+          <li><span class="ar-glifo nv-critico" aria-hidden="true">■</span>Urgente</li>
+          <li><span class="ar-glifo nv-semleitura" aria-hidden="true">●</span>Sem leitura há mais de 10 min</li>
+          <li><span class="ar-glifo nv-vazio" aria-hidden="true">○</span>Vazio sanitário</li>
+        </ul>
+        <ul class="ar-legenda" id="ar-legenda-zonas" aria-label="Legenda das zonas" hidden>
+          <li><span class="ar-glifo nv-normal" aria-hidden="true">✓</span>Normal</li>
+          <li><span class="ar-glifo nv-atencao" aria-hidden="true">▲</span>Atenção</li>
+          <li><span class="ar-glifo nv-critico" aria-hidden="true">■</span>Crítico</li>
+          <li><span class="ar-legenda__trajeto" aria-hidden="true"></span>Trajeto do carrinho</li>
+          <li><span class="ar-legenda__carrinho" aria-hidden="true"></span>Carrinho</li>
+        </ul>
+        <p class="ar-dica" id="ar-dica"></p>
+      </div>
+    </section>
+
+    <aside class="ar-painel" id="ar-painel" aria-label="Painel lateral"></aside>
+  </main>
+
+  <div class="ar-sr" aria-live="polite" id="ar-anuncio"></div>
+</div>
+</body>
+</html>

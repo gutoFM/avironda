@@ -108,3 +108,49 @@ def test_leitura_com_horario_no_futuro_e_recusada(cliente):
     r = cliente.post("/api/v1/leituras", json=corpo, headers=DISPOSITIVO).json()
     assert r["status"] == "invalida"
     assert "futuro" in r["motivos"][0]
+
+
+def test_paginas_da_granja_e_do_galpao(cliente):
+    assert 'id="ar-app"' in cliente.get("/").text
+    assert 'id="zonas"' in cliente.get("/galpao").text
+    assert cliente.get("/static/granja/vendor/three.min.js").status_code == 200
+
+
+def test_painel_por_galpao(cliente):
+    g1 = cliente.get("/api/v1/painel").json()
+    assert (g1["galpao_codigo"], g1["lote_codigo"]) == ("G1", "L-DEMO")
+    g3 = cliente.get("/api/v1/painel?galpao=G3").json()
+    assert (g3["galpao_nome"], g3["lote_codigo"], g3["faixa_conforto_c"]) == ("Galpão 3", "L-DEMO-G3", [20.0, 23.0])
+    assert cliente.get("/api/v1/painel?galpao=G9").status_code == 404
+    assert cliente.get("/api/v1/painel?galpao=x;drop").status_code == 422
+
+
+def test_propriedade_mostra_cada_galpao_pelo_seu_lote(cliente, sem_previsao):
+    # Lote do G3 tem 35 dias (conforto de 20 a 23 °C): 30,8 °C é crítico e confirma na segunda medição.
+    cliente.post("/api/v1/leituras", json=leitura(temperatura=30.8, minutos_atras=2, lote_codigo="L-DEMO-G3"), headers=DISPOSITIVO)
+    cliente.post("/api/v1/leituras", json=leitura(temperatura=30.8, lote_codigo="L-DEMO-G3"), headers=DISPOSITIVO)
+    p = cliente.get("/api/v1/propriedade").json()
+
+    assert [g["codigo"] for g in p["galpoes"]] == ["G1", "G2", "G3", "G4"]
+    g1, g3 = p["galpoes"][0], p["galpoes"][2]
+    assert g1["robo_atrasado"] is True and g1["minutos_sem_leitura"] is None
+    assert g3["robo_atrasado"] is False and g3["minutos_sem_leitura"] == 0
+    assert next(z for z in g3["zonas"] if z["codigo"] == "Z4")["nivel"] == "critico"
+    assert p["alertas"] == [{
+        "galpao": "G3", "zona": "Z4", "nivel": "critico", "status": "confirmado",
+        "motivo": p["alertas"][0]["motivo"], "acao_recomendada": p["alertas"][0]["acao_recomendada"],
+        "atualizado_em": p["alertas"][0]["atualizado_em"],
+    }]
+    assert "30.8" in p["alertas"][0]["motivo"]
+    # A tela mostra o horário da granja, não o UTC.
+    assert p["atualizado_em"].endswith("-03:00") and p["alertas"][0]["atualizado_em"].endswith("-03:00")
+    assert p["previsao_max_c"] == []
+
+
+def test_zona_em_atencao_aparece_para_o_produtor(cliente, sem_previsao):
+    # Atenção não abre alerta, mas a lista "Precisa de você" mostra a zona como observação.
+    cliente.post("/api/v1/leituras", json=leitura(zona="Z5", temperatura=30, co2_ppm=2700, lote_codigo="L-DEMO-G2"),
+                 headers=DISPOSITIVO)
+    alerta = cliente.get("/api/v1/propriedade").json()["alertas"][0]
+    assert (alerta["galpao"], alerta["zona"], alerta["nivel"], alerta["status"]) == ("G2", "Z5", "atencao", "observacao")
+    assert "CO2 2700" in alerta["motivo"]

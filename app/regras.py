@@ -111,16 +111,16 @@ def avaliar(
     t_min, t_max = CONFORTO_POR_SEMANA[semana]
     if temperatura_c > t_max + MARGEM_ATENCAO_C:
         nivel = _pior(nivel, Nivel.CRITICO)
-        motivos.append(f"temperatura {temperatura_c} °C muito acima do conforto ({t_min} a {t_max} °C)")
+        motivos.append(f"temperatura {temperatura_c:.1f} °C muito acima do conforto ({t_min} a {t_max} °C)")
     elif temperatura_c > t_max:
         nivel = _pior(nivel, Nivel.ATENCAO)
-        motivos.append(f"temperatura {temperatura_c} °C acima do conforto ({t_min} a {t_max} °C)")
+        motivos.append(f"temperatura {temperatura_c:.1f} °C acima do conforto ({t_min} a {t_max} °C)")
     elif temperatura_c < t_min - MARGEM_ATENCAO_C:
         nivel = _pior(nivel, Nivel.CRITICO)
-        motivos.append(f"temperatura {temperatura_c} °C muito abaixo do conforto ({t_min} a {t_max} °C)")
+        motivos.append(f"temperatura {temperatura_c:.1f} °C muito abaixo do conforto ({t_min} a {t_max} °C)")
     elif temperatura_c < t_min:
         nivel = _pior(nivel, Nivel.ATENCAO)
-        motivos.append(f"temperatura {temperatura_c} °C abaixo do conforto ({t_min} a {t_max} °C)")
+        motivos.append(f"temperatura {temperatura_c:.1f} °C abaixo do conforto ({t_min} a {t_max} °C)")
 
     if co2_ppm >= CO2_CRITICO_PPM:
         nivel = _pior(nivel, Nivel.CRITICO)
@@ -132,10 +132,10 @@ def avaliar(
     if amonia_ppm is not None:
         if amonia_ppm >= AMONIA_CRITICO_PPM:
             nivel = _pior(nivel, Nivel.CRITICO)
-            motivos.append(f"amônia {amonia_ppm} ppm acima de {AMONIA_CRITICO_PPM:.0f}")
+            motivos.append(f"amônia {amonia_ppm:.1f} ppm acima de {AMONIA_CRITICO_PPM:.0f}")
         elif amonia_ppm >= AMONIA_ATENCAO_PPM:
             nivel = _pior(nivel, Nivel.ATENCAO)
-            motivos.append(f"amônia {amonia_ppm} ppm acima de {AMONIA_ATENCAO_PPM:.0f}")
+            motivos.append(f"amônia {amonia_ppm:.1f} ppm acima de {AMONIA_ATENCAO_PPM:.0f}")
 
     return Avaliacao(nivel=nivel, itu=itu, motivos=tuple(motivos))
 

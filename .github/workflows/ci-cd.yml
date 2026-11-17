@@ -52,6 +52,12 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: pip install -r requirements-dev.txt
       - run: python -m pytest -q
+      # Tela da granja num Chromium real, com a CSP de produção: abre o Galpão 3 em 3D e no mapa 2D.
+      - name: Teste de ponta a ponta da tela da granja
+        run: |
+          docker run --rm -v "$PWD":/src -w /src -e PYTHONDONTWRITEBYTECODE=1 \
+            mcr.microsoft.com/playwright/python:v1.65.2-noble \
+            sh -c "pip install -q --break-system-packages -r requirements-e2e.txt && python -m pytest -q -p no:cacheprovider tests/e2e"
 
   iac:
     name: Terraform e Trivy config (IaC)

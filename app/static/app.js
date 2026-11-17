@@ -10,6 +10,9 @@ const NOMES_STATUS = {
 };
 
 const $ = (id) => document.getElementById(id);
+// /galpao?galpao=G3 abre o galpão 3. Sem o parâmetro, a API devolve o primeiro galpão.
+const GALPAO = new URLSearchParams(location.search).get("galpao");
+const FILTRO = GALPAO && /^G[0-9]{1,2}$/.test(GALPAO) ? `?galpao=${GALPAO}` : "";
 
 function el(tag, attrs = {}, filhos = []) {
   const no = document.createElement(tag);
@@ -37,7 +40,7 @@ async function buscar(caminho) {
 }
 
 function desenharPainel(dados) {
-  $("granja").textContent = `${dados.granja} (${dados.municipio})`;
+  $("granja").textContent = `${dados.granja}, ${dados.galpao_nome} (${dados.municipio})`;
   $("lote").textContent = dados.lote_codigo;
   $("idade").textContent = `${dados.idade_lote_dias} dias`;
   $("conforto").textContent = `${numero(dados.faixa_conforto_c[0], 0)} a ${numero(dados.faixa_conforto_c[1], 0)} °C`;
@@ -115,10 +118,12 @@ function desenharClima(clima) {
 
 async function atualizar() {
   // Cada bloco falha sozinho: se uma parte cair, o resto do painel continua útil.
+  const painel = buscar(`/api/v1/painel${FILTRO}`);
   const tarefas = [
-    buscar("/api/v1/painel").then(desenharPainel),
-    buscar("/api/v1/alertas?limite=20").then(desenharAlertas),
-    buscar("/api/v1/indicadores/fora-do-limite").then(desenharImpacto),
+    painel.then(desenharPainel),
+    Promise.all([painel, buscar("/api/v1/alertas?limite=100")])
+      .then(([p, alertas]) => desenharAlertas(alertas.filter((a) => a.lote_codigo === p.lote_codigo))),
+    buscar(`/api/v1/indicadores/fora-do-limite${FILTRO}`).then(desenharImpacto),
     buscar("/api/v1/clima").then(desenharClima),
   ];
   const resultados = await Promise.allSettled(tarefas);

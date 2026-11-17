@@ -54,7 +54,7 @@ services:
     profiles: ["demo"]
     image: ${API_IMAGE:-avironda-api:local}
     restart: unless-stopped
-    command: ["python", "scripts/simulador.py", "--api", "http://api:8000", "--rondas", "0"]
+    command: ["python", "scripts/simulador.py", "--api", "http://api:8000", "--rondas", "0", "--cenario-demo"]
     # A imagem traz o health check da API; o simulador não serve HTTP, então ele é desligado aqui.
     healthcheck:
       disable: true

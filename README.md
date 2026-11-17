@@ -4,7 +4,7 @@ Carrinho autônomo que faz a ronda do aviário no lugar do granjeiro. Ele mede c
 
 Este repositório é o **componente Produção** da CitizenTech AviRonda (Global Solution FIAP 2026, 4º ano de Engenharia de Software): a API e o painel que as outras disciplinas consomem, empacotados em container, com infraestrutura no Azure criada por Terraform, pipeline DevSecOps e observabilidade.
 
-- **MVP no ar:** https://avironda-zrh1y.brazilsouth.cloudapp.azure.com (painel do galpão) e https://avironda-zrh1y.brazilsouth.cloudapp.azure.com/docs (contrato da API)
+- **MVP no ar:** https://avironda-zrh1y.brazilsouth.cloudapp.azure.com (a granja em 3D; o detalhe de cada galpão fica em `/galpao?galpao=G1`) e https://avironda-zrh1y.brazilsouth.cloudapp.azure.com/docs (contrato da API)
 - **Repositório:** https://github.com/gutoFM/avironda
 
 ## Integrantes
@@ -37,7 +37,7 @@ Este repositório é o **componente Produção** da CitizenTech AviRonda (Global
 ```
 app/                     API FastAPI, regras de negócio e painel web (HTML, CSS e JS sem framework)
 tests/                   Testes de regras e da API (pytest)
-scripts/simulador.py     Faz o papel do carrinho e envia leituras no mesmo contrato do robô
+scripts/simulador.py     Faz o papel dos carrinhos (um por galpão) e envia leituras no mesmo contrato do robô
 Dockerfile               Imagem em duas etapas, usuário não root, sem segredo
 docker-compose.yml       Caddy (HTTPS) + API + PostgreSQL (+ simulador no perfil demo)
 infra/terraform/         Rede, firewall, Key Vault e VM no Azure
@@ -58,20 +58,25 @@ cp .env.example .env
 docker compose --profile demo up -d --build
 ```
 
-- Painel: http://localhost:8080 (ou a porta do `HTTP_PORT`)
+- Granja em 3D: http://localhost:8080 (ou a porta do `HTTP_PORT`). Mapa 2D: `/?modo=2d`. Detalhe de um galpão: `/galpao?galpao=G3`
 - Contrato da API: http://localhost:8080/docs
 - Forçar um pico de calor na zona Z4 para ver o alerta ser confirmado:
 
 ```bash
 docker compose run --rm --no-deps simulador python scripts/simulador.py \
-  --api http://api:8000 --rondas 2 --intervalo 5 --evento-calor --dispositivo demo-calor
+  --api http://api:8000 --galpao G1 --rondas 2 --intervalo 5 --evento-calor --dispositivo demo-calor
 ```
+
+No perfil `demo`, o simulador roda com `--cenario-demo`: G1 normal, G2 com CO2 subindo, G3 com calor confirmado e o carrinho do G4 atrasado, para a tela mostrar cada estado.
 
 Testes:
 
 ```bash
 docker run --rm -v "$PWD":/src -w /src python:3.12-slim \
   sh -c "pip install -q -r requirements-dev.txt && python -m pytest -q"
+# Tela da granja num Chromium real (3D e mapa 2D)
+docker run --rm -v "$PWD":/src -w /src mcr.microsoft.com/playwright/python:v1.65.2-noble \
+  sh -c "pip install -q --break-system-packages -r requirements-e2e.txt && python -m pytest -q tests/e2e"
 ```
 
 ## Observabilidade

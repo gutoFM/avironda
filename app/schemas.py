@@ -63,6 +63,8 @@ class ZonaStatus(BaseModel):
 class PainelStatus(BaseModel):
     granja: str
     municipio: str
+    galpao_codigo: str
+    galpao_nome: str
     lote_codigo: str
     idade_lote_dias: int
     faixa_conforto_c: List[float]
@@ -103,3 +105,50 @@ class Clima(BaseModel):
     temperatura_max_c: List[float] = []
     datas: List[date] = []
     mensagem: str = ""
+
+
+class PrevisaoDia(BaseModel):
+    data: date
+    max: float
+
+
+class ZonaGalpao(BaseModel):
+    codigo: str
+    nome: str
+    nivel: Optional[str]
+    temperatura_c: Optional[float]
+    umidade_pct: Optional[float]
+    co2_ppm: Optional[float]
+    itu: Optional[float]
+
+
+class GalpaoStatus(BaseModel):
+    codigo: str
+    nome: str
+    lote_codigo: Optional[str]
+    idade_lote_dias: Optional[int]
+    faixa_conforto_c: Optional[List[float]]
+    minutos_sem_leitura: Optional[int]
+    robo_atrasado: bool
+    vazio_sanitario: bool
+    zonas: List[ZonaGalpao]
+
+
+class AlertaPropriedade(BaseModel):
+    galpao: str
+    zona: str
+    nivel: str
+    status: str  # suspeita | confirmado | observacao (zona em atenção, sem alerta aberto)
+    motivo: str
+    acao_recomendada: str
+    atualizado_em: datetime
+
+
+class PropriedadeStatus(BaseModel):
+    """Visão da granja inteira para a tela "Minha granja hoje". Horários no fuso da granja."""
+    granja: str
+    municipio: str
+    atualizado_em: Optional[datetime]
+    previsao_max_c: List[PrevisaoDia]
+    galpoes: List[GalpaoStatus]
+    alertas: List[AlertaPropriedade]

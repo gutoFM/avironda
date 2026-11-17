@@ -6,16 +6,33 @@ Documentação interativa (OpenAPI) em `/docs`. Base: a URL pública do MVP.
 |---|---|---|---|
 | `POST /api/v1/leituras` | Robô (Maker Lab), simulador | `X-Device-Token` | Enviar uma leitura |
 | `POST /api/v1/leituras/lote` | Robô | `X-Device-Token` | Reenviar o que ficou guardado sem internet (até 500) |
-| `GET /api/v1/painel` | Painel, pitch | Pública | Situação atual de cada zona do lote ativo |
-| `GET /api/v1/leituras?zona=Z4&horas=24` | Big Data (coleta no Airflow), visão computacional | Pública | Histórico de leituras do lote ativo |
-| `GET /api/v1/indicadores/fora-do-limite` | Painel, BI | Pública | Indicador de impacto por zona |
+| `GET /api/v1/propriedade` | Tela "Minha granja hoje" | Pública | Todos os galpões, previsão de máxima e o que precisa do produtor |
+| `GET /api/v1/painel?galpao=G1` | Painel do galpão, pitch | Pública | Situação atual de cada zona do lote ativo do galpão |
+| `GET /api/v1/leituras?galpao=G1&zona=Z4&horas=24` | Big Data (coleta no Airflow), visão computacional | Pública | Histórico de leituras do lote ativo do galpão |
+| `GET /api/v1/indicadores/fora-do-limite?galpao=G1` | Painel, BI | Pública | Indicador de impacto por zona |
 | `GET /api/v1/alertas?status=confirmado` | RPA | Pública | Alertas para notificar |
 | `PATCH /api/v1/alertas/{id}` | RPA, pessoa | `X-Api-Key` | Marcar como notificado ou resolvido |
 | `GET /api/v1/clima` | Painel | Pública | Previsão de máxima (Open-Meteo) |
 | `GET /health` | Pipeline, Docker | Pública | Saúde da API e do banco |
 | `GET /metrics` | Prometheus | `Authorization: Bearer` | Métricas |
 
-As rotas públicas não devolvem dado pessoal.
+As rotas públicas não devolvem dado pessoal. Sem `galpao`, as rotas por galpão usam o primeiro galpão da granja (G1).
+
+Cada galpão tem um lote ativo, e o robô envia o `lote_codigo` do galpão onde está. As zonas Z1 a Z6 são as mesmas em todos os galpões.
+
+## Situação da granja inteira
+
+`GET /api/v1/propriedade` devolve, por galpão: lote, idade, faixa de conforto, minutos sem leitura, `robo_atrasado`, `vazio_sanitario` (galpão sem lote ativo) e a última leitura válida de cada zona. Horários no fuso da granja (`-03:00`).
+
+`alertas` é a lista "Precisa de você":
+
+| `status` | De onde vem |
+|---|---|
+| `suspeita` | Alerta aberto por uma leitura crítica, esperando a nova medição |
+| `confirmado` | Segunda leitura crítica na janela de 15 minutos. Fecha só por decisão humana (`PATCH`) |
+| `observacao` | Zona em atenção na última leitura. Atenção não abre alerta, mas o produtor precisa ver |
+
+Galpão com `robo_atrasado` não vira item de `alertas`: a tela gera esse aviso a partir do próprio galpão.
 
 ## Enviar leitura (robô)
 

@@ -35,7 +35,17 @@ class Granja(Base):
     produtor_id: Mapped[int] = mapped_column(ForeignKey("produtor.id"))
 
 
+class Galpao(Base):
+    __tablename__ = "galpao"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    granja_id: Mapped[int] = mapped_column(ForeignKey("granja.id"))
+    codigo: Mapped[str] = mapped_column(String(10))
+    nome: Mapped[str] = mapped_column(String(60))
+    ordem: Mapped[int] = mapped_column(Integer)
+
+
 class Zona(Base):
+    """As zonas da ronda são as mesmas em todos os galpões da granja (mesmo projeto de aviário)."""
     __tablename__ = "zona"
     id: Mapped[int] = mapped_column(primary_key=True)
     granja_id: Mapped[int] = mapped_column(ForeignKey("granja.id"))
@@ -48,6 +58,7 @@ class Lote(Base):
     __tablename__ = "lote"
     id: Mapped[int] = mapped_column(primary_key=True)
     granja_id: Mapped[int] = mapped_column(ForeignKey("granja.id"))
+    galpao_id: Mapped[Optional[int]] = mapped_column(ForeignKey("galpao.id"))
     codigo: Mapped[str] = mapped_column(String(30), unique=True)
     data_alojamento: Mapped[date] = mapped_column(Date)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)

@@ -1,0 +1,3 @@
+-r requirements-dev.txt
+# Mesma versão da imagem mcr.microsoft.com/playwright/python usada no pipeline (os navegadores vêm nela).
+playwright==1.65.2
