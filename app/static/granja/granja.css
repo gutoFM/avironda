@@ -201,3 +201,43 @@ a:hover { color: var(--marca-escura); }
 }
 .ar-marcador::after { content: ""; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); border: 7px solid transparent; border-bottom: 0; border-top-color: currentColor; }
 .ar-pill { white-space: nowrap; }
+
+/* Assistente de perguntas (RAG) */
+.ar-resumo__dir { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.ar-btn--assistente { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--marca); background: var(--marca); color: #fff; font-size: 14px; font-weight: 700; }
+.ar-btn--assistente:hover { background: var(--marca-escura); border-color: var(--marca-escura); }
+.ar-assistente { width: min(760px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 1px solid var(--borda); border-radius: 16px; padding: 22px; color: var(--texto); background: #fff; box-shadow: 0 18px 50px rgba(20, 40, 25, .28); }
+.ar-assistente::backdrop { background: rgba(19, 34, 24, .45); }
+.ar-assistente h2 { margin: 0; font-size: 22px; font-weight: 800; }
+.ar-assistente__cab { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.ar-assistente__fechar { flex: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--borda); background: #fff; color: var(--texto); display: inline-flex; align-items: center; justify-content: center; }
+.ar-assistente__form { display: flex; gap: 8px; margin-top: 16px; }
+.ar-assistente__form input { flex: 1; min-width: 0; min-height: 44px; padding: 8px 14px; border-radius: 12px; border: 2px solid var(--borda); font: inherit; color: var(--texto); }
+.ar-assistente__form input:focus-visible { outline: 3px solid var(--marca); outline-offset: 1px; border-color: var(--marca); }
+.ar-assistente__exemplos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.ar-chip { padding: 4px 12px; min-height: 32px; border-radius: 999px; border: 1px solid var(--borda); background: var(--fundo); color: var(--texto-2); font-size: 13px; font-weight: 600; }
+.ar-chip:hover { border-color: var(--marca); color: var(--marca); }
+.ar-resposta { margin-top: 16px; padding: 14px 16px; border-radius: 12px; border: 2px solid; }
+.ar-resposta__nivel { font-weight: 800; font-size: 14px; }
+.ar-resposta__texto { margin: 6px 0 0; font-size: 18px; font-weight: 700; line-height: 1.35; }
+.ar-resposta__fonte { margin: 6px 0 0; font-family: var(--mono); font-size: 13px; }
+.ar-json { margin: 10px 0 0; padding: 12px 14px; border-radius: 10px; background: #1b1f1a; color: #e3f2e6; font-family: var(--mono); font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+.ar-passos { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; }
+.ar-passos > li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+.ar-passos__n { width: 30px; height: 30px; border-radius: 50%; background: var(--marca); color: #fff; font-family: var(--mono); font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
+.ar-passos__t { margin: 0; font-weight: 700; }
+.ar-passos__d { margin: 2px 0 0; font-size: 14px; color: var(--texto-2); }
+.ar-dist { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.ar-dist li { display: grid; grid-template-columns: 76px 1fr 54px; gap: 8px; align-items: center; font-size: 13px; }
+.ar-dist__id { font-family: var(--mono); font-weight: 600; }
+.ar-dist__barra { position: relative; height: 10px; border-radius: 999px; background: var(--fundo); border: 1px solid var(--borda); overflow: hidden; }
+.ar-dist__barra span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: #b6dfbf; }
+.ar-dist__barra span.fora { background: #cdd1ca; }
+.ar-dist__barra i { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #8a1c14; }
+.ar-dist__v { font-family: var(--mono); text-align: right; }
+.ar-assistente__nota { margin: 16px 0 0; padding: 10px 12px; border-radius: 10px; background: #f1f6f0; border: 1px solid #c9dcc9; font-size: 13px; color: var(--texto-2); }
+@media (max-width: 600px) {
+  .ar-assistente { padding: 16px; }
+  .ar-assistente__form { flex-direction: column; }
+  .ar-assistente__form .ar-btn--assistente { justify-content: center; }
+}

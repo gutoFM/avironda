@@ -12,11 +12,12 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app import clima, metricas, servicos
+from app import assistente, clima, metricas, servicos
 from app.config import settings
 from app.db import SessionLocal, sessao
 from app.schemas import (AlertaAtualizacao, AlertaSaida, Clima, HorasForaZona, LeituraEntrada,
-                         LeituraLote, LeituraResultado, LeituraSaida, PainelStatus, PropriedadeStatus)
+                         LeituraLote, LeituraResultado, LeituraSaida, PainelStatus, Pergunta, PropriedadeStatus,
+                         RespostaAssistente)
 from app.seed import preparar_banco
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -162,6 +163,12 @@ def fora_do_limite(galpao: Optional[str] = GALPAO, db: Session = Depends(sessao)
 @app.get("/api/v1/clima", response_model=Clima, tags=["painel"])
 def previsao() -> Clima:
     return clima.previsao(settings.granja_latitude, settings.granja_longitude)
+
+
+@app.post("/api/v1/assistente", response_model=RespostaAssistente, tags=["assistente"])
+def perguntar(corpo: Pergunta) -> RespostaAssistente:
+    """Responde só com o que está na base técnica (16 trechos), citando o id do trecho. Se não constar, recusa."""
+    return RespostaAssistente(**assistente.perguntar(corpo.pergunta))
 
 
 @app.get("/api/v1/alertas", response_model=List[AlertaSaida], tags=["alertas"])

@@ -152,3 +152,30 @@ class PropriedadeStatus(BaseModel):
     previsao_max_c: List[PrevisaoDia]
     galpoes: List[GalpaoStatus]
     alertas: List[AlertaPropriedade]
+
+
+class Pergunta(BaseModel):
+    pergunta: str = Field(min_length=3, max_length=300, examples=["Qual o limite de amônia recomendado para exportadores de frango?"])
+
+
+class TrechoContexto(BaseModel):
+    id: str
+    fonte: str
+    distancia: float
+    texto: str
+
+
+class PassosBusca(BaseModel):
+    dimensoes_do_vetor: int
+    termos_da_pergunta: int
+    trechos_na_base: int
+    limite_distancia: float
+    contexto: List[TrechoContexto]
+
+
+class RespostaAssistente(BaseModel):
+    """Contrato da disciplina Generative AI: resposta, id do trecho citado e se encontrou na base."""
+    resposta: str
+    fonte: Optional[str]
+    encontrou: bool
+    passos: PassosBusca

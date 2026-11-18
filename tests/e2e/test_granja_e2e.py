@@ -105,3 +105,19 @@ def test_mapa_2d_sem_webgl_mostra_a_mesma_informacao(url, pagina):
     sync_api.expect(pagina.locator("#ar-cena-titulo")).to_have_text("Galpão 3 em corte")
     sync_api.expect(pagina.locator(".ar-planta__zona.nv-critico")).to_contain_text("Z4")
     assert pagina.erros == []
+
+
+def test_assistente_responde_citando_a_fonte_e_recusa(url, pagina):
+    pagina.goto(url)
+    pagina.locator("#ar-assistente-abrir").click()
+    pagina.locator('[data-pergunta^="Qual o limite de amônia"]').click()
+    sync_api.expect(pagina.locator(".ar-resposta__texto")).to_contain_text("20 ppm")
+    sync_api.expect(pagina.locator(".ar-json")).to_contain_text('"fonte": "emb_002"')
+    sync_api.expect(pagina.locator(".ar-passos > li")).to_have_count(4)
+    pagina.locator('[data-pergunta="Qual vacina usar contra Newcastle?"]').click()
+    sync_api.expect(pagina.locator(".ar-resposta__texto")).to_have_text("Não consta na base.")
+    sync_api.expect(pagina.locator(".ar-json")).to_contain_text('"encontrou": false')
+    # Esc fecha o assistente sem mexer na visão da granja.
+    pagina.keyboard.press("Escape")
+    sync_api.expect(pagina.locator("#ar-assistente")).not_to_be_visible()
+    assert pagina.erros == []

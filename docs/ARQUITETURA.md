@@ -83,6 +83,7 @@ flowchart LR
 | Monitoramento fora da VM | Grafana e Prometheus não precisam de porta aberta na nuvem. Se a VM cair, o monitoramento continua de pé e dispara o alerta. |
 | Painel sem framework e sem script inline | Página leve para celular de entrada e rede ruim no campo, e CSP restrita (`script-src 'self'`). |
 | Granja em 3D com three.js servido pelo próprio site | A tela inicial (`/`) mostra a propriedade inteira, um marcador por galpão (glifo e palavra, nunca só cor). three.js r147 e as fontes ficam em `app/static/granja/`, conferidos com o pacote oficial, sem CDN, então a CSP continua só `'self'`. Sem WebGL, a mesma tela vira um mapa 2D. O detalhe de um galpão com histórico fica em `/galpao?galpao=G1`. |
+| Assistente de perguntas por busca nos trechos, sem modelo de linguagem na nuvem | A tela responde dúvidas só com a base técnica (16 trechos) e recusa o que não consta. Em Python puro, sem dependência nova e sem custo de GPU. O modelo de linguagem (qwen2.5:3b) roda no componente local da disciplina Generative AI, com o mesmo contrato de resposta. |
 | Regras explícitas na API | O granjeiro e o avaliador conseguem ver por que uma zona ficou crítica. As partes de IA (RAG e visão) ficam nos componentes das outras disciplinas. |
 
 ## Resiliência
