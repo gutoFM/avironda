@@ -11,6 +11,7 @@ Documentação interativa (OpenAPI) em `/docs`. Base: a URL pública do MVP.
 | `GET /api/v1/leituras?galpao=G1&zona=Z4&horas=24` | Big Data (coleta no Airflow), visão computacional | Pública | Histórico de leituras do lote ativo do galpão |
 | `GET /api/v1/indicadores/fora-do-limite?galpao=G1` | Painel, BI | Pública | Indicador de impacto por zona |
 | `GET /api/v1/alertas?status=confirmado` | RPA | Pública | Alertas para notificar |
+| `POST /api/v1/assistente` | Tela da granja ("Pergunte ao AviRonda") | Pública | Pergunta sobre o ambiente do aviário, respondida só com a base técnica |
 | `PATCH /api/v1/alertas/{id}` | RPA, pessoa | `X-Api-Key` | Marcar como notificado ou resolvido |
 | `GET /api/v1/clima` | Painel | Pública | Previsão de máxima (Open-Meteo) |
 | `GET /health` | Pipeline, Docker | Pública | Saúde da API e do banco |
@@ -19,6 +20,25 @@ Documentação interativa (OpenAPI) em `/docs`. Base: a URL pública do MVP.
 As rotas públicas não devolvem dado pessoal. Sem `galpao`, as rotas por galpão usam o primeiro galpão da granja (G1).
 
 Cada galpão tem um lote ativo, e o robô envia o `lote_codigo` do galpão onde está. As zonas Z1 a Z6 são as mesmas em todos os galpões.
+
+## Assistente de perguntas
+
+`POST /api/v1/assistente` com `{"pergunta": "..."}` (3 a 300 caracteres). Responde no contrato da disciplina Generative AI:
+
+```json
+{"resposta": "Exportadores de carne de frango adotam o limite de 20 ppm de amônia no ar do aviário.", "fonte": "emb_002", "encontrou": true}
+```
+
+Se nenhum trecho da base estiver perto o bastante, `encontrou` é `false`, `fonte` é `null` e a resposta é "Não consta na base.". O campo `passos` traz os números da busca (dimensões do vetor, os 3 trechos do contexto e as distâncias) para a tela mostrar como a resposta foi encontrada.
+
+Como funciona neste protótipo (`app/assistente.py`, base em `app/assistente_base.json`, 16 trechos):
+
+1. A pergunta vira um vetor TF-IDF de palavras e de pedaços de 4 letras, com sinônimos do domínio (galpão e aviário, gás carbônico e CO2).
+2. O vetor é comparado com os 16 trechos pela distância de cosseno. Acima de 0,74, recusa. O limite foi calibrado com as perguntas de `tests/test_assistente.py`.
+3. Os 3 trechos mais próximos formam o contexto.
+4. A resposta é a frase do trecho mais próximo que mais se parece com a pergunta, citando o id.
+
+No componente da disciplina Generative AI, os passos 1 e 2 usam embeddings neurais no ChromaDB (limite 0,20) e o passo 4 é escrito pelo qwen2.5:3b no Ollama, local. O contrato de resposta é o mesmo.
 
 ## Situação da granja inteira
 
